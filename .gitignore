@@ -1,0 +1,12 @@
+.claude/
+scratchpad_tmp/
+__pycache__/
+*.py
+*.md
+condutas/*.json
+data/*.json
+data/p*.json
+/Aula*
+/allimg.txt
+*.txt
+scratchpad_tmp/
