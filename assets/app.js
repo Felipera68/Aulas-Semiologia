@@ -148,17 +148,25 @@
   }
 
   // Negrito no início do ponto: até o primeiro ":" (ou o primeiro ponto final), se for curto
-  function negritoInicio(texto) {
+  // "slide N" / "slides N" viram link para a página do PDF
+  function comSlides(a, texto) {
+    return String(texto).split(/(slides?\s+\d+)/i).map(function (p, i) {
+      if (i % 2 === 1) return linkSlide(a, p.match(/\d+/)[0], esc(p));
+      return esc(p);
+    }).join("");
+  }
+
+  function negritoInicio(a, texto) {
     var m = texto.match(/^([^:]{2,70}):\s/) || texto.match(/^([^.]{2,70})\.\s/);
-    if (!m) return esc(texto);
-    return "<b>" + esc(m[1]) + (texto.charAt(m[1].length) === ":" ? ":" : ".") + "</b> " + esc(texto.slice(m[0].length));
+    if (!m) return comSlides(a, texto);
+    return "<b>" + comSlides(a, m[1]) + (texto.charAt(m[1].length) === ":" ? ":" : ".") + "</b> " + comSlides(a, texto.slice(m[0].length));
   }
 
   function renderResumo(a) {
     var secoes = a.resumo.map(function (s) {
       return "<h3>" + esc(s.titulo) + "</h3><ul class='resumo'>" + s.pontos.map(function (p) {
-        if (typeof p === "string") return "<li>" + negritoInicio(p) + "</li>";
-        return "<li><b>" + esc(p.t) + "</b><ul>" + p.sub.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></li>";
+        if (typeof p === "string") return "<li>" + negritoInicio(a, p) + "</li>";
+        return "<li><b>" + comSlides(a, p.t) + "</b><ul>" + p.sub.map(function (x) { return "<li>" + comSlides(a, x) + "</li>"; }).join("") + "</ul></li>";
       }).join("") + "</ul>";
     }).join("");
     var fontes = "<p class='note'>Fontes citadas no material: " + a.fontes.map(esc).join("; ") + ".</p>";
