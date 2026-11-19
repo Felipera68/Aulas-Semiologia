@@ -130,7 +130,7 @@
     else if (aba === "condutas") corpo = renderCondutas(a);
     else if (aba === "imagens") corpo = renderImagens(a);
     else if (aba === "manobras") corpo = renderManobras(a);
-    else if (aba === "pdf") corpo = "<div class='panel'><p class='note'>Se o PDF não abrir aqui, use o arquivo <code>" + esc(a.pdf) + "</code> da pasta do projeto.</p><iframe class='pdf-frame' src='" + esc(a.pdf) + "' title='PDF da aula'></iframe></div>";
+    else if (aba === "pdf") corpo = "<div class='panel'><p class='note'><a class='btn-pdf' href='" + esc(a.pdf) + "' target='_blank' rel='noopener'>Abrir PDF completo em nova aba</a></p><p class='note'>No celular, use o botão acima para rolar todas as páginas. A visualização abaixo mostra só a primeira página em alguns aparelhos.</p><iframe class='pdf-frame' src='" + esc(a.pdf) + "' title='PDF da aula'></iframe></div>";
 
     app.innerHTML =
       "<div class='crumb'><a href='#/'>Aulas</a> / " + esc(a.titulo) + "</div>" +
