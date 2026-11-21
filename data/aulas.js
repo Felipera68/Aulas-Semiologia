@@ -23,7 +23,7 @@ window.INDICE_AULAS = [
  {
   "id": "aula-07-1",
   "titulo": "Aula 7.1",
-  "subtitulo": "Semiologia osteomioarticular I",
+  "subtitulo": "Semiologia osteomioarticular I: ombro, cotovelo, punho e mão",
   "pdf": "pdf/aula-07-1.pdf",
   "status": "disponivel"
  },
