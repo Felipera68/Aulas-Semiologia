@@ -79,7 +79,7 @@
         "<p>" + esc(a.subtitulo) + "</p>" +
         (disp
           ? "<div class='bar'><i style='width:" + p + "%'></i></div>" +
-            "<span class='badge ok'>Disponível · " + r.feitas + "/15 respondidas" + (r.feitas ? " · " + p + "% acerto" : "") + "</span>"
+            "<span class='badge ok'>Disponível · " + r.feitas + "/" + ((aulaFull(a.id) && aulaFull(a.id).questoes) ? aulaFull(a.id).questoes.length : 15) + " respondidas" + (r.feitas ? " · " + p + "% acerto" : "") + "</span>"
           : "<span class='badge'>Em breve</span>");
       return disp
         ? "<a class='card' href='#/aula/" + esc(a.id) + "'>" + inner + "</a>"
@@ -116,9 +116,11 @@
     var a = aulaFull(id);
     if (!a) { app.innerHTML = "<p>Aula não encontrada.</p>"; return; }
     setTitle(a.titulo);
-    aba = aba || "resumo";
+    var abasAula = a.abas ? ABAS.filter(function (t) { return a.abas.indexOf(t[0]) >= 0; }) : ABAS;
+    aba = aba || abasAula[0][0];
+    if (a.abas && a.abas.indexOf(aba) < 0) aba = abasAula[0][0];
 
-    var tabs = "<nav class='tabs' role='tablist'>" + ABAS.map(function (t) {
+    var tabs = "<nav class='tabs' role='tablist'>" + abasAula.map(function (t) {
       return "<button role='tab' aria-selected='" + (t[0] === aba) + "' data-go='#/aula/" + esc(id) + "/" + t[0] + "'>" + t[1] + "</button>";
     }).join("") + "</nav>";
 
@@ -130,7 +132,7 @@
     else if (aba === "condutas") corpo = renderCondutas(a);
     else if (aba === "imagens") corpo = renderImagens(a);
     else if (aba === "manobras") corpo = renderManobras(a);
-    else if (aba === "pdf") corpo = "<div class='panel'><p class='note'><a class='btn-pdf' href='" + esc(a.pdf) + "' target='_blank' rel='noopener'>Abrir PDF completo em nova aba</a></p><p class='note'>No celular, use o botão acima para rolar todas as páginas. A visualização abaixo mostra só a primeira página em alguns aparelhos.</p><iframe class='pdf-frame' src='" + esc(a.pdf) + "' title='PDF da aula'></iframe></div>";
+    else if (aba === "pdf") corpo = "<div class='panel'><p class='note'><a class='btn-pdf' href='" + esc(a.pdf) + "' target='_blank' rel='noopener'>Abrir PDF completo em nova aba</a></p><p class='note'>No celular, use o botão acima para rolar todas as páginas. A visualização abaixo mostra só a primeira página em alguns aparelhos.</p>" + (a.pdf2 ? "<p class='note'><a class='btn-pdf' href='" + esc(a.pdf2) + "' target='_blank' rel='noopener'>Abrir gabarito comentado</a></p>" : "") + "<iframe class='pdf-frame' src='" + esc(a.pdf) + "' title='PDF da aula'></iframe></div>";
 
     app.innerHTML =
       "<div class='crumb'><a href='#/'>Aulas</a> / " + esc(a.titulo) + "</div>" +

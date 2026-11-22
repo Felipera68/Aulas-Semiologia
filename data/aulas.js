@@ -61,5 +61,12 @@ window.INDICE_AULAS = [
   "subtitulo": "Semiologia das mamas",
   "pdf": "pdf/aula-09-2.pdf",
   "status": "disponivel"
+ },
+ {
+  "id": "simulado-joao",
+  "titulo": "Resumos Professor João",
+  "subtitulo": "Simulado de 100 questões · modelo de raciocínio do Prof. João",
+  "pdf": "pdf/simulado-prof-joao.pdf",
+  "status": "disponivel"
  }
 ];
