@@ -64,8 +64,8 @@ window.INDICE_AULAS = [
  },
  {
   "id": "simulado-joao",
-  "titulo": "Simulado Professor João",
-  "subtitulo": "Simulado de 100 questões · modelo de raciocínio do Prof. João",
+  "titulo": "Simulado Fernanda",
+  "subtitulo": "Simulado de 100 questões · realizado pela Fernanda",
   "pdf": "pdf/simulado-prof-joao.pdf",
   "status": "disponivel"
  }
