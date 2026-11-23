@@ -97,10 +97,30 @@
     var p = PROFESSORES_AGRESSAO.filter(function (x) { return x.slug === slug; })[0];
     if (!p) { app.innerHTML = "<p>Professor não encontrado.</p>"; return; }
     setTitle("Professor " + p.nome);
+    var idx = (window.INDICE_AGRESSAO || {})[slug] || [];
+    var cards = idx.map(function (a) {
+      var r = resumoAula(a.id);
+      var n = aulaFull(a.id) && aulaFull(a.id).questoes ? aulaFull(a.id).questoes.length : 15;
+      var p2 = r.feitas ? Math.round(100 * r.acertos / r.feitas) : 0;
+      return "<a class='card' href='#/aula/" + esc(a.id) + "'><h3>" + esc(a.titulo) + "</h3><p>" + esc(a.subtitulo) + "</p>" +
+        "<div class='bar'><i style='width:" + p2 + "%'></i></div>" +
+        "<span class='badge ok'>" + r.feitas + "/" + n + " respondidas" + (r.feitas ? " · " + p2 + "% acerto" : "") + "</span></a>";
+    }).join("");
     app.innerHTML =
       "<div class='crumb'><a href='#/'>Início</a> / <a href='#/agressao'>Agressão e Defesa</a> / " + esc(p.nome) + "</div>" +
       "<h2 class='page'>Professor " + esc(p.nome) + "</h2>" +
-      "<p class='sub'>Aulas em breve.</p>";
+      (cards ? "<p class='sub'>Aulas de imunologia.</p><div class='grid'>" + cards + "</div>" : "<p class='sub'>Aulas em breve.</p>");
+  }
+
+  // ---------- comparativo (tabela) ----------
+  function renderTabela(a) {
+    var t = a.tabela;
+    if (!t) return "<div class='panel'><p>Sem comparativo nesta aula.</p></div>";
+    return "<div class='panel'><h3>" + esc(t.titulo) + "</h3><div style='overflow-x:auto'><table class='comp'><thead><tr>" +
+      t.colunas.map(function (c) { return "<th>" + esc(c) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      t.linhas.map(function (l) {
+        return "<tr>" + l.map(function (c, i) { return i === 0 ? "<th>" + esc(c) + "</th>" : "<td>" + esc(c) + "</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div></div>";
   }
 
   // ---------- landing: semiologia ----------
@@ -152,6 +172,7 @@
     ["quiz", "Quiz"],
     ["imagens", "Imagens"],
     ["manobras", "Manobras"],
+    ["tabela", "Comparativo"],
     ["pdf", "PDF"]
   ];
 
@@ -175,10 +196,13 @@
     else if (aba === "condutas") corpo = renderCondutas(a);
     else if (aba === "imagens") corpo = renderImagens(a);
     else if (aba === "manobras") corpo = renderManobras(a);
+    else if (aba === "tabela") corpo = renderTabela(a);
     else if (aba === "pdf") corpo = "<div class='panel'><p class='note'><a class='btn-pdf' href='" + esc(a.pdf) + "' target='_blank' rel='noopener'>Abrir PDF completo em nova aba</a></p><p class='note'>No celular, use o botão acima para rolar todas as páginas. A visualização abaixo mostra só a primeira página em alguns aparelhos.</p>" + (a.pdf2 ? "<p class='note'><a class='btn-pdf' href='" + esc(a.pdf2) + "' target='_blank' rel='noopener'>Abrir gabarito comentado</a></p>" : "") + "<iframe class='pdf-frame' src='" + esc(a.pdf) + "' title='PDF da aula'></iframe></div>";
 
     app.innerHTML =
-      "<div class='crumb'><a href='#/'>Início</a> / <a href='#/semiologia'>Semiologia</a> / " + esc(a.titulo) + "</div>" +
+      (a.voltar
+        ? "<div class='crumb'><a href='#/'>Início</a> / <a href='#/agressao'>Agressão e Defesa</a> / <a href='" + esc(a.voltar.href) + "'>" + esc(a.voltar.texto) + "</a> / " + esc(a.titulo) + "</div>"
+        : "<div class='crumb'><a href='#/'>Início</a> / <a href='#/semiologia'>Semiologia</a> / " + esc(a.titulo) + "</div>") +
       "<h2 class='page'>" + esc(a.titulo) + "</h2>" +
       "<p class='sub'>" + esc(a.subtitulo) + "</p>" +
       tabs + "<div id='conteudo'>" + corpo + "</div>";
@@ -600,7 +624,7 @@
           "<dl>" +
             (q.epônimo ? "<dt>Epônimo</dt><dd>" + esc(q.epônimo) + "</dd>" : "") +
             "<dt>Técnica</dt><dd>" + esc(q.tecnica) + "</dd>" +
-            "<dt>Slide</dt><dd>" + linkSlide(a, q.slide) + "</dd>" +
+            "<dt>Slide</dt><dd>" + linkSlide(q.pdf ? { pdf: q.pdf } : a, q.slide) + "</dd>" +
           "</dl></div>";
       }
 

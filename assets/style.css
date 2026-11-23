@@ -411,3 +411,8 @@ body { background: #f3efe6; }
 .hier { margin: 12px 0; }
 
 .btn-pdf { display: inline-block; padding: 10px 16px; border-radius: 10px; background: #1f4960; color: #fff; text-decoration: none; font-weight: 600; }
+
+/* comparativo (tabela) */
+.comp{width:100%;border-collapse:collapse;font-size:14px}
+.comp th,.comp td{border:1px solid #c9d6df;padding:8px;vertical-align:top;text-align:left}
+.comp thead th{background:#e9f1f6}
