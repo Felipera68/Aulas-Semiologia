@@ -61,9 +61,51 @@
     return "<a href='" + esc(a.pdf) + "#page=" + n + "' target='_blank' rel='noopener'>" + (texto || ("slide " + n)) + "</a>";
   }
 
-  // ---------- landing ----------
+  // ---------- início: escolha da área ----------
+  var PROFESSORES_AGRESSAO = [
+    { slug: "thiago", nome: "Thiago" },
+    { slug: "gilmar", nome: "Gilmar" },
+    { slug: "natalia", nome: "Natália" }
+  ];
+
+  function paginaHome() {
+    setTitle("Início");
+    app.innerHTML =
+      "<section class='hero'>" +
+        "<h1>Plataforma de estudo</h1>" +
+        "<p>Escolha a matéria.</p>" +
+      "</section>" +
+      "<div class='grid'>" +
+        "<a class='card' href='#/semiologia'><h3>Semiologia</h3><p>Aulas de semiologia osteomioarticular, tegumentar e GU.</p></a>" +
+        "<a class='card' href='#/agressao'><h3>Agressão e Defesa</h3><p>Professores Thiago, Gilmar e Natália.</p></a>" +
+      "</div>";
+  }
+
+  function paginaAgressao() {
+    setTitle("Agressão e Defesa");
+    var cards = PROFESSORES_AGRESSAO.map(function (p) {
+      return "<a class='card' href='#/agressao/" + esc(p.slug) + "'><h3>Professor " + esc(p.nome) + "</h3><p>Aulas em breve.</p></a>";
+    }).join("");
+    app.innerHTML =
+      "<div class='crumb'><a href='#/'>Início</a> / Agressão e Defesa</div>" +
+      "<h2 class='page'>Agressão e Defesa</h2>" +
+      "<p class='sub'>Escolha o professor.</p>" +
+      "<div class='grid'>" + cards + "</div>";
+  }
+
+  function paginaProfessorAgressao(slug) {
+    var p = PROFESSORES_AGRESSAO.filter(function (x) { return x.slug === slug; })[0];
+    if (!p) { app.innerHTML = "<p>Professor não encontrado.</p>"; return; }
+    setTitle("Professor " + p.nome);
+    app.innerHTML =
+      "<div class='crumb'><a href='#/'>Início</a> / <a href='#/agressao'>Agressão e Defesa</a> / " + esc(p.nome) + "</div>" +
+      "<h2 class='page'>Professor " + esc(p.nome) + "</h2>" +
+      "<p class='sub'>Aulas em breve.</p>";
+  }
+
+  // ---------- landing: semiologia ----------
   function paginaInicio() {
-    setTitle("Aulas");
+    setTitle("Aulas de semiologia");
     var idx = window.INDICE_AULAS || [];
     var disponiveis = idx.filter(function (a) { return a.status === "disponivel"; }).length;
     var totalFeitas = 0, totalAcertos = 0;
@@ -87,6 +129,7 @@
     }).join("");
 
     app.innerHTML =
+      "<div class='crumb'><a href='#/'>Início</a> / Semiologia</div>" +
       "<section class='hero'>" +
         "<h1>Semiologia osteomioarticular, tegumentar e GU</h1>" +
         "<p class='autor'>Felipe Alberton</p>" +
@@ -135,7 +178,7 @@
     else if (aba === "pdf") corpo = "<div class='panel'><p class='note'><a class='btn-pdf' href='" + esc(a.pdf) + "' target='_blank' rel='noopener'>Abrir PDF completo em nova aba</a></p><p class='note'>No celular, use o botão acima para rolar todas as páginas. A visualização abaixo mostra só a primeira página em alguns aparelhos.</p>" + (a.pdf2 ? "<p class='note'><a class='btn-pdf' href='" + esc(a.pdf2) + "' target='_blank' rel='noopener'>Abrir gabarito comentado</a></p>" : "") + "<iframe class='pdf-frame' src='" + esc(a.pdf) + "' title='PDF da aula'></iframe></div>";
 
     app.innerHTML =
-      "<div class='crumb'><a href='#/'>Aulas</a> / " + esc(a.titulo) + "</div>" +
+      "<div class='crumb'><a href='#/'>Início</a> / <a href='#/semiologia'>Semiologia</a> / " + esc(a.titulo) + "</div>" +
       "<h2 class='page'>" + esc(a.titulo) + "</h2>" +
       "<p class='sub'>" + esc(a.subtitulo) + "</p>" +
       tabs + "<div id='conteudo'>" + corpo + "</div>";
@@ -668,7 +711,10 @@
       return paginaAula(partes[1], partes[2], partes[3]);
     }
     if (partes[0] === "desempenho") return paginaDesempenho();
-    return paginaInicio();
+    if (partes[0] === "semiologia") return paginaInicio();
+    if (partes[0] === "agressao" && partes[1]) return paginaProfessorAgressao(partes[1]);
+    if (partes[0] === "agressao") return paginaAgressao();
+    return paginaHome();
   }
 
   window.addEventListener("hashchange", rota);

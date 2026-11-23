@@ -1,4 +1,4 @@
-const VERSAO = 'semiologia-v6';
+const VERSAO = 'semiologia-v7';
 const CASCA = [
   './', './index.html', './manifest.webmanifest',
   './assets/style.css', './assets/app.js',
