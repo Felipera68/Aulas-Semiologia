@@ -104,12 +104,12 @@
       var p2 = r.feitas ? Math.round(100 * r.acertos / r.feitas) : 0;
       return "<a class='card' href='#/aula/" + esc(a.id) + "'><h3>" + esc(a.titulo) + "</h3><p>" + esc(a.subtitulo) + "</p>" +
         "<div class='bar'><i style='width:" + p2 + "%'></i></div>" +
-        "<span class='badge ok'>" + r.feitas + "/" + n + " respondidas" + (r.feitas ? " · " + p2 + "% acerto" : "") + "</span></a>";
+        (aulaFull(a.id) && aulaFull(a.id).questoes ? "<span class='badge ok'>" + r.feitas + "/" + n + " respondidas" + (r.feitas ? " · " + p2 + "% acerto" : "") + "</span>" : "") + "</a>";
     }).join("");
     app.innerHTML =
       "<div class='crumb'><a href='#/'>Início</a> / <a href='#/agressao'>Agressão e Defesa</a> / " + esc(p.nome) + "</div>" +
       "<h2 class='page'>Professor " + esc(p.nome) + "</h2>" +
-      (cards ? "<p class='sub'>Aulas de imunologia.</p><div class='grid'>" + cards + "</div>" : "<p class='sub'>Aulas em breve.</p>");
+      (cards ? "<p class='sub'>" + (slug === "natalia" ? "Microbiologia: roteiro e aulas." : "Aulas de imunologia.") + "</p><div class='grid'>" + cards + "</div>" : "<p class='sub'>Aulas em breve.</p>");
   }
 
   // ---------- comparativo (tabela) ----------
@@ -160,7 +160,9 @@
           "<span class='pill'>" + pct + "% de acerto geral</span>" +
         "</div>" +
       "</section>" +
-      "<div class='grid'>" + cards + "</div>";
+      "<div class='grid'>" +
+        "<a class='card' href='#/semiologia/manobras'><h3>Simulado de manobras</h3><p>Resumo de todas as manobras, da cabeça aos pés, com slide do professor, e quiz de manobras.</p></a>" +
+        cards + "</div>";
   }
 
   // ---------- página da aula ----------
@@ -726,6 +728,88 @@
     }
   }
 
+  // ---------- pasta: simulado e manobras ----------
+  function renderManobrasResumo(M) {
+    var byG = {};
+    M.manobras.forEach(function (m) { (byG[m.grupo] = byG[m.grupo] || []).push(m); });
+    return M.grupos.filter(function (g) { return byG[g.id]; }).map(function (g) {
+      return "<h3>" + esc(g.titulo) + "</h3>" + byG[g.id].map(function (m) {
+        return "<div class='panel' style='margin-bottom:10px'><h4>" + esc(m.nome) + "</h4>" +
+          (m.epo ? "<p><span class='epo'>Epônimo: " + esc(m.epo) + "</span></p>" : "") +
+          "<p><b>Como fazer:</b> " + esc(m.como) + "</p>" +
+          "<p><b>Alterado:</b> " + esc(m.alterado) + "</p>" +
+          "<p><b>Significado:</b> " + esc(m.significado) + "</p>" +
+          "<p>" + linkSlide({ pdf: m.pdf }, m.slide, "Ver no slide " + m.slide + " do professor") +
+          " <span class='note'>· " + esc(m.aula) + "</span></p></div>";
+      }).join("");
+    }).join("");
+  }
+
+  function desenhaQuizManobras() {
+    var Q = (window.MANOBRAS && window.MANOBRAS.quiz) || [];
+    var st = window.__mq;
+    var box = document.getElementById("conteudo");
+    if (!box || !st) return;
+    if (st.i >= Q.length) {
+      box.innerHTML = "<div class='panel'><h3>Fim do quiz</h3><p>" + st.ac + " de " + st.ft + " corretas.</p>" +
+        "<button class='btn' id='mq-zerar'>Recomeçar</button></div>";
+      document.getElementById("mq-zerar").onclick = function () { window.__mq = null; paginaManobras("quiz"); };
+      return;
+    }
+    var q = Q[st.i];
+    var resp = st.resp[st.i];
+    var opts = q.alternativas.map(function (t, k) {
+      var L = "ABCDE".charAt(k);
+      var cls = "opt";
+      if (resp !== undefined && L === q.gabarito) cls += " right";
+      if (resp !== undefined && L === resp && L !== q.gabarito) cls += " wrong";
+      return "<button class='" + cls + "' data-mq='" + L + "' " + (resp !== undefined ? "disabled" : "") + ">" +
+        "<span class='l'>" + L + ")</span>" + esc(t) + "</button>";
+    }).join("");
+    var fb = resp === undefined ? "" :
+      "<div class='feedback " + (resp === q.gabarito ? "ok" : "bad") + "'><div class='tag'>" +
+      (resp === q.gabarito ? "Você acertou" : "Você errou. Gabarito: " + q.gabarito) + "</div>" +
+      "<p>" + esc(q.justificativa) + "</p><p>" + linkSlide({ pdf: q.pdf }, q.slide, "Ver no slide " + q.slide + " do professor") + "</p></div>";
+    box.innerHTML = "<p class='meta'>Questão " + (st.i + 1) + " de " + Q.length + " · acertos " + st.ac + "/" + st.ft + "</p>" +
+      "<div class='qa mc'><div class='qtext'><b>" + (st.i + 1) + ".</b> " + esc(q.enunciado) + "</div>" +
+      "<div class='opts'>" + opts + "</div>" + fb + "</div>" +
+      "<div class='row' style='margin-top:14px;justify-content:space-between'>" +
+      "<button class='btn' id='mq-ant' " + (st.i === 0 ? "disabled" : "") + ">&larr; Anterior</button>" +
+      "<button class='btn primary' id='mq-prox'>Próxima &rarr;</button></div>";
+    var bs = box.querySelectorAll("[data-mq]");
+    for (var b = 0; b < bs.length; b++) {
+      bs[b].onclick = function (ev) {
+        var L = ev.currentTarget.getAttribute("data-mq");
+        if (st.resp[st.i] !== undefined) return;
+        st.resp[st.i] = L;
+        st.ft++;
+        if (L === Q[st.i].gabarito) st.ac++;
+        desenhaQuizManobras();
+      };
+    }
+    document.getElementById("mq-ant").onclick = function () { st.i = Math.max(0, st.i - 1); desenhaQuizManobras(); };
+    document.getElementById("mq-prox").onclick = function () { st.i++; desenhaQuizManobras(); };
+  }
+
+  function paginaManobras(aba) {
+    setTitle("Simulado de manobras");
+    aba = aba || "manobras";
+    var M = window.MANOBRAS || { grupos: [], manobras: [], quiz: [] };
+    if (aba === "quiz" && (!window.__mq || window.__mq.len !== M.quiz.length)) {
+      window.__mq = { i: 0, ac: 0, ft: 0, len: M.quiz.length, resp: {} };
+    }
+    var tabs = "<nav class='tabs' role='tablist'>" + [["manobras", "Resumo"], ["quiz", "Quiz de manobras"]].map(function (t) {
+      return "<button role='tab' aria-selected='" + (t[0] === aba) + "' data-go='#/semiologia/manobras/" + t[0] + "'>" + t[1] + "</button>";
+    }).join("") + "</nav>";
+    var corpo;
+    if (aba === "quiz") corpo = "<div id='quiz-mq'></div>";
+    else corpo = renderManobrasResumo(M);
+    app.innerHTML = "<div class='crumb'><a href='#/'>Início</a> / <a href='#/semiologia'>Semiologia</a> / Simulado de manobras</div>" +
+      "<h2 class='page'>Simulado de manobras</h2><p class='sub'>Organizado da cabeça aos pés.</p>" + tabs +
+      "<div id='conteudo'>" + corpo + "</div>";
+    if (aba === "quiz") desenhaQuizManobras();
+  }
+
   // ---------- roteamento ----------
   function rota() {
     var h = (location.hash || "#/").replace(/^#\/?/, "");
@@ -735,6 +819,7 @@
       return paginaAula(partes[1], partes[2], partes[3]);
     }
     if (partes[0] === "desempenho") return paginaDesempenho();
+    if (partes[0] === "semiologia" && partes[1] === "manobras") return paginaManobras(partes[2]);
     if (partes[0] === "semiologia") return paginaInicio();
     if (partes[0] === "agressao" && partes[1]) return paginaProfessorAgressao(partes[1]);
     if (partes[0] === "agressao") return paginaAgressao();
