@@ -233,11 +233,27 @@
     return "<b>" + comSlides(a, m[1]) + (texto.charAt(m[1].length) === ":" ? ":" : ".") + "</b> " + comSlides(a, texto.slice(m[0].length));
   }
 
+  // Destaque: rótulos de atenção (Pegadinha, Ênfase, Correção...) ficam em cor de destaque
+  var RE_DEST = /(PEGADINHA|ATENÇÃO|ÊNFASE|CORREÇÃO|Pegadinha|Atenção para a prova|Atenção|Ênfase|Correção científica|Correção|Conceito-chave|CONCEITO-CHAVE|Mnemônico|Pontos-chave|Ponto-chave|Dica|Cuidado|Importante)/;
+  function destaque(a, texto) {
+    return String(texto).split(RE_DEST).map(function (p, i) {
+      if (i % 2 === 1) return "<b class='dest'>" + esc(p) + "</b>";
+      return comSlides(a, p);
+    }).join("");
+  }
+
+  // Item de subtópico: o termo antes do primeiro ":" fica em negrito, se for curto
+  function subItem(a, x) {
+    var m = String(x).match(/^([^:]{2,45}):\s/);
+    if (!m) return destaque(a, x);
+    return "<b>" + destaque(a, m[1]) + ":</b> " + destaque(a, String(x).slice(m[0].length));
+  }
+
   function renderResumo(a) {
     var secoes = a.resumo.map(function (s) {
       return "<h3>" + esc(s.titulo) + "</h3><ul class='resumo'>" + s.pontos.map(function (p) {
         if (typeof p === "string") return "<li>" + negritoInicio(a, p) + "</li>";
-        return "<li><b>" + comSlides(a, p.t) + "</b><ul>" + p.sub.map(function (x) { return "<li>" + comSlides(a, x) + "</li>"; }).join("") + "</ul></li>";
+        return "<li><b>" + comSlides(a, p.t) + "</b><ul>" + p.sub.map(function (x) { return "<li>" + subItem(a, x) + "</li>"; }).join("") + "</ul></li>";
       }).join("") + "</ul>";
     }).join("");
     var fontes = "<p class='note'>Fontes citadas no material: " + a.fontes.map(esc).join("; ") + ".</p>";

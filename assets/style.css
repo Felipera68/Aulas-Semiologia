@@ -406,6 +406,8 @@ body { background: #f3efe6; }
 .resumo li { margin: 4px 0; }
 .resumo > li > ul { margin: 4px 0 8px 0; list-style: disc; }
 .resumo > li > ul > li { margin: 2px 0; }
+.resumo b.dest { color: var(--accent); font-weight: 700; background: color-mix(in srgb, var(--accent) 12%, transparent); padding: 0 3px; border-radius: 3px; }
+.resumo > li > ul > li > b { color: var(--ink); }
 
 .linha { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--ink); margin-left: 8px; vertical-align: middle; }
 .hier { margin: 12px 0; }
